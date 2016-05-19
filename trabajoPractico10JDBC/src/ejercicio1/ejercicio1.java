@@ -17,14 +17,17 @@ public class ejercicio1 {
 		String usuario="postgres";
 		String contraseña="postgres";
 		
-		Connection con=DriverManager.getConnection(url, usuario, contraseña);
+		Connection con;
+		con=DriverManager.getConnection(url, usuario, contraseña);
 		
-		Statement stmt=con.createStatement();
+		Statement stmt;
+		stmt=con.createStatement();
 		
 		String consultaSql="SELECT vendedor.nombre,AVG(total) AS tot,COUNT(total) AS cant FROM vendedor "
 				+"INNER JOIN venta ON vendedor.codigo=venta.vendedor GROUP BY vendedor.nombre";
 		
-		ResultSet rs1=stmt.executeQuery(consultaSql);
+		ResultSet rs1;
+		rs1=stmt.executeQuery(consultaSql);
 		
 		System.out.println("VENDEDOR          |PROMEDIO DE VENTAS| TOTAL DE VENTAS");
 		while(rs1.next()){

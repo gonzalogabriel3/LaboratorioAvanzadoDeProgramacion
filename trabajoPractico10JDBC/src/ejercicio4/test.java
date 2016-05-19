@@ -3,18 +3,17 @@ package ejercicio4;
 import java.sql.*;
 import java.util.logging.*;
 
+import org.apache.log4j.chainsaw.Main;
+
 public class test {
 
     static Connection conexion;
-    static Statement st;
-    
-    
-    
+    static Statement st; 
     static DatabaseMetaData metadatos;
     static ResultSetMetaData rsmetadatos;
 
 
-    public static void recibeDatabase(String nombreDB){
+    public static void recibeDatabase(String nombreDB) throws ClassNotFoundException{
         
 
         try {
@@ -37,61 +36,37 @@ public class test {
             System.out.println("Nombre de Driver: "+metadatos.getDriverName());
             //Version de driver
             System.out.println("Version de Driver: "+metadatos.getDriverVersion());
-            //Tablas
             
-            ResultSet rst;
-            ResultSet rsc;
+            String[] tablas={"TABLE"};
+            int contador;
+            ResultSet rs=metadatos.getTables(null, null, null, tablas);
             
-            rst = metadatos.getTables(null, null, null, null);
-            String tabla="";
-            while(rst.next()){
-                tabla = rst.getObject(3).toString();
-                System.out.println("Nombre de Tabla: "+tabla);
-                //primary key si existe
-                ResultSet rsp = metadatos.getPrimaryKeys(null, null, tabla);
-                if(rsp.next())
-                    System.out.println("Primary Key: "+rsp.getObject(4));
-                rsp.close();
-                //columnas y tipos
-                rsc = metadatos.getColumns(null, null, tabla, null);
-                while(rsc.next()){
-                    System.out.println("    Columna "+rsc.getString(4));
-                    System.out.println("    Tipo "+rsc.getInt(5));
-                }
-                rsc.close();
-            }
-            rst.close();
-
-            
-            /*ResultSetMetaData
-             * Obteniendo Informacion sobre una consulta con un ResultSet
-            */
-            
-            System.out.println("\nObteniendo Informacion sobre una consulta con un ResultSet");
-            ResultSet rs = st.executeQuery("select * from venta");
-            rsmetadatos =  rs.getMetaData();
-            //obteniendo numero de columnas
-            int col = rsmetadatos.getColumnCount();
-            System.out.println("Columnas: "+col);
-            for(int i=1;i<=col;i++){
-                System.out.println("Nombre de Columa: "+rsmetadatos.getColumnName(i));
-                System.out.println("Tipo de Dato: "+rsmetadatos.getColumnTypeName(i));
-                System.out.println("Pertenece a la tabla: "+rsmetadatos.getTableName(i)+"\n");
-            }
-            
-            
-            
-        } catch (Exception ex) {
-            Logger.getLogger(test.class.getName()).log(Level.SEVERE, null, ex);
+            while(rs.next()){
+            	String nombreTabla=rs.getString(3);
+            	System.out.print("Nombre de la Tabla: "+nombreTabla);	
+            	PreparedStatement stmt=conexion.prepareStatement("SELECT * FROM "+nombreTabla);
+            	ResultSet rsaux=stmt.executeQuery();
+            	ResultSetMetaData rsmdaux=rsaux.getMetaData();
+            	int numeroColumnas=rsmdaux.getColumnCount();
+            	System.out.println("|~|Cantidad de Columnas:"+numeroColumnas);
+            	
+            	for(int i=1;i<=numeroColumnas; i++){
+            	System.out.println("Columna:"+rsmdaux.getColumnLabel(i)+"|~|Tipo: "+rsmdaux.getColumnTypeName(i));
+            	
+            	
+            	}
+            	
+            } 
+                  
+        }catch(SQLException e){
+        	System.out.println(e.getMessage());
         }
-    }
+     
+       
+     }
+ 
+    public static void main(String[] args) throws ClassNotFoundException {
+		recibeDatabase("venta");
+	}
     
-    
-    public static void main(String args[]){
-        
-    
-        recibeDatabase("venta");
-        
-    }        
-
-}
+} 
